@@ -1,0 +1,107 @@
+//Se dispone de un archivo de caracteres numéricos; cada carácter representa un
+//número positivo de 1 dígito. Se pide determinar cuál es el mayor valor y en qué
+//posiciones aparece. Por ejemplo: si el archivo fuera: 143214324231421, el mayor
+//valor es 4 y aparece en las posiciones: 1, 5, 8 y 12.
+
+
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include "biblioteca/funciones/strings.hpp"
+#include "biblioteca/funciones/tokens.hpp"
+#include "biblioteca/tads/Coll.hpp"
+using namespace std;
+
+void seekInt(FILE* f,int nro)
+{
+   int byteNro = sizeof(int)*nro;
+   fseek(f,byteNro,SEEK_SET);
+}
+
+template<typename T>
+void write(FILE* f,T t){
+   fwrite(&t,sizeof(T),1,f);
+}
+
+template<typename T>
+void read(FILE* f,T t){
+   fread(&t,sizeof(T),1,f);
+}
+
+int longitudEnBytes(FILE* f)
+{
+
+   //guardo ind. de pos. actual
+   int actual = ftell(f);
+
+   fseek(f,0,SEEK_END);
+
+   int nroUltByte = ftell(f);
+
+   fseek(f,actual,SEEK_SET);
+
+   return nroUltByte;
+}
+
+int longitudEnInts(FILE* f)
+{
+   return longitudEnBytes(f)/sizeof(int);
+}
+
+struct Persona
+{
+int dni;
+char nombre[15];
+};
+
+string personaToString(Persona p)
+{
+return intToString(p.dni)+","+p.nombre;
+}
+
+int main()
+{
+  //Creo p.xx y le ingreso 11 numeros
+  FILE* f = fopen("p.xx","w+b");
+  int i;
+  cout << "Ingrese los numeros que contendra el proyecto: ";
+  for(int sup = 0;sup<=10;sup++){
+     cin >> i;
+     write<int>(f,i);
+  }
+  cout << "--------" << endl;
+  fclose(f);
+
+  FILE* f1 = fopen("p.xx","r+b");
+
+  int supa; //contiene el int del momento
+  fread(&supa,sizeof(int),1,f1);
+  int supb = 0; //contiene el int max
+
+  while( !feof(f1) ){
+     if(supa>supb){
+        supb = supa;
+     }
+     fread(&supa,sizeof(int),1,f1);
+  }
+
+  cout << "El maximo numero en esa coleccion es: " << supb << endl;
+  cout << "--------" << endl;
+  fclose(f1);
+
+  FILE* f2 = fopen("p.xx","r+b");
+  int supc;
+  fread(&supc,sizeof(int),1,f2);
+  int pos = 0;
+  cout << supb << " se encuentra en las siguientes posiciones: ";
+  while( !feof(f2) ){
+     if(supc==supb){
+        cout << pos <<endl;
+     }
+     pos++;
+     fread(&supc,sizeof(int),1,f2);
+  }
+  fclose(f2);
+
+  return 0;
+}
